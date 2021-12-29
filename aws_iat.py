@@ -2,7 +2,7 @@ import requests
 import json
 from influxdb import InfluxDBClient
 from datetime import datetime
-#
+
 
 def aws_cf_oauth_token():
     url = "https://uaa.cf.sap.hana.ondemand.com/oauth/token"
