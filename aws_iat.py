@@ -2,12 +2,18 @@ import requests
 import json
 from influxdb import InfluxDBClient
 from datetime import datetime
+import dotenv
+import os
 
+dotenv.load_dotenv(".env")
+PASSWORD = os.environ["PASSWORD"]
+USERNAME = os.environ["USERNAME"]
+email = "prism@global.corp.sap"
 
 def aws_cf_oauth_token():
     url = "https://uaa.cf.sap.hana.ondemand.com/oauth/token"
 
-    payload = "grant_type=password&client_id=cf&client_secret=&username=prism@global.corp.sap&password=Prisminfra529#5"
+    payload = f"grant_type=password&client_id=cf&client_secret=&username={email}&password={PASSWORD}"
     headers = {
         'Content-Type': 'application/x-www-form-urlencoded',
         'Cookie': 'JSESSIONID=ZDc4OWZhNGYtNmZmMC00MDllLTg4MGEtY2NhMzAyM2YzMzYz; __VCAP_ID__=6c9fa102-b148-485c-4f41-990197bba0cd'
