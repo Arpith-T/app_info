@@ -84,7 +84,7 @@ def push_app_info():
                 {
                     "measurement": "MTMS_INFO",
                     "tags": {
-                        "IAAS": "AWS",
+                        "IAAS": "Azure",
                         "Product_Version": f"{cpi_prod_version()} - {datetime.now().date()}"
                     },
                     "fields": {
