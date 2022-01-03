@@ -10,7 +10,7 @@ PASSWORD = os.environ["PASSWORD"]
 USERNAME = os.environ["USERNAME"]
 email = "prism@global.corp.sap"
 
-def aws_cf_oauth_token():
+def aws_pet_ext_cf_oauth_token():
     url = "https://uaa.cf.eu12-001.hana.ondemand.com/oauth/token"
 
     payload = "grant_type=password&client_id=cf&client_secret=&username=prism@global.corp.sap&password=Prisminfra529#5"
@@ -28,12 +28,12 @@ def aws_cf_oauth_token():
     return aws_pet_ext_token["access_token"]
 
 
-def cpi_prod_version():
+def aws_pet_ext_cpi_prod_version():
     url = "https://api.cf.eu12-001.hana.ondemand.com/v3/apps?page=1&per_page=1000&space_guids=d8892cc5-7a90-4274-89fc-7f7f9e3eec08&names=it-co"
 
     payload = {}
     headers = {
-        'Authorization': f'Bearer {aws_cf_oauth_token()}'
+        'Authorization': f'Bearer {aws_pet_ext_cf_oauth_token()}'
     }
 
     co_response = (requests.request("GET", url, headers=headers, data=payload)).json()
@@ -43,7 +43,7 @@ def cpi_prod_version():
 
     payload = {}
     headers = {
-        'Authorization': f'Bearer {aws_cf_oauth_token()}'
+        'Authorization': f'Bearer {aws_pet_ext_cf_oauth_token()}'
     }
 
     response = requests.request("GET", url, headers=headers, data=payload)
@@ -53,7 +53,7 @@ def cpi_prod_version():
     return cpi_product_version
 
 
-def push_app_info():
+def aws_pet_ext_push_app_info():
     dev_client = InfluxDBClient('hci-rit-prism-sel.cpis.c.eu-de-2.cloud.sap', 8086, 'arpdb')
     dev_client.switch_database('arpdb')
 
@@ -68,7 +68,7 @@ def push_app_info():
 
         payload = {}
         headers = {
-            'Authorization': f'Bearer {aws_cf_oauth_token()}'
+            'Authorization': f'Bearer {aws_pet_ext_cf_oauth_token()}'
         }
 
         response = requests.request("GET", url, headers=headers, data=payload)
@@ -92,7 +92,7 @@ def push_app_info():
                     "measurement": "MTMS_INFO",
                     "tags": {
                         "IAAS": "AWS-PET-Ext",
-                        "Product_Version": f"{cpi_prod_version()} - {datetime.now().date()}"
+                        "Product_Version": f"{aws_pet_ext_cpi_prod_version} - {datetime.now().date()}"
                     },
                     "fields": {
                         "Microservice": app_name,
@@ -112,9 +112,9 @@ def push_app_info():
                 print(all_app_info)
 
 def main():
-    aws_cf_oauth_token()
-    cpi_prod_version()
-    push_app_info()
+    aws_pet_ext_cf_oauth_token()
+    aws_pet_ext_cpi_prod_version()
+    aws_pet_ext_push_app_info()
 
 if __name__ == "__main__":
     main()
