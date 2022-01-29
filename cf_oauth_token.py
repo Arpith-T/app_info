@@ -51,3 +51,5 @@ def azure_cf_oauth_token():
 
 
 # print(azure_cf_oauth_token())
+
+# print(aws_cf_oauth_token())

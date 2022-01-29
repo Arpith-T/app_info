@@ -4,6 +4,7 @@ from influxdb import InfluxDBClient
 from datetime import datetime
 import dotenv
 import os
+from healthcheck import app_process_info
 
 dotenv.load_dotenv(".env")
 PASSWORD = os.environ["PASSWORD"]
@@ -26,6 +27,7 @@ def aws_cf_oauth_token():
 
     return aws_token["access_token"]
 
+token = aws_cf_oauth_token()
 
 def cpi_prod_version():
     url = "https://api.cf.sap.hana.ondemand.com/v3/apps?page=1&per_page=1000&space_guids=2c92d3e7-a833-4fbf-89e2-917c07cea220&names=it-co"
@@ -68,7 +70,7 @@ def push_app_info():
 
         payload = {}
         headers = {
-            'Authorization': f'Bearer {aws_cf_oauth_token()}'
+            'Authorization': f'Bearer {token}'
         }
 
         response = requests.request("GET", url, headers=headers, data=payload)
@@ -86,30 +88,73 @@ def push_app_info():
             app_guid = app_info["resources"][0]["guid"]
 
             # print(f"App->{app_name}\nStatus-{app_state}\nApp-Version-{app_version}\nUpdatedOn-{app_updated_at}\nGUID-{app_guid}\n\n")
+            mtms_hc_info = app_process_info(app_guid, token)
 
-            all_app_info = [
-                {
-                    "measurement": "MTMS_INFO",
-                    "tags": {
-                        "IAAS": "AWS-IAT",
-                        "Product_Version": f"{cpi_prod_version()} - {datetime.now().date()}"
-                    },
-                    "fields": {
-                        "Microservice": app_name,
-                        "Status": app_state,
-                        "Version": app_version,
-                        "UpdatedOn": app_updated_at,
-                        "GUID": app_guid
+            try:
+
+                all_app_info = [
+                    {
+                        "measurement": "MTMS_INFO",
+                        "tags": {
+                            "IAAS": "AWS-IAT",
+                            "Product_Version": f"{cpi_prod_version()} - {datetime.now().date()}"
+                        },
+                        "fields": {
+                            "Microservice": app_name,
+                            "Status": app_state,
+                            "Version": app_version,
+                            "UpdatedOn": app_updated_at,
+                            "GUID": app_guid,
+                            "Instaces": mtms_hc_info[0],
+                            "Meomory": mtms_hc_info[1],
+                            "Disk_size": mtms_hc_info[2],
+                            "Healthcheck_type": mtms_hc_info[3],
+                            "HC_timeout": mtms_hc_info[4],
+                            "HC_invocation_timeout": mtms_hc_info[5],
+                            "HC_endpoint": mtms_hc_info[6]
+
+                        }
                     }
-                }
-            ]
-            # print(all_app_info)
-            if dev_client.write_points(all_app_info, protocol='json'):
-                print(f"{app_name} Data Insertion success")
-                pass
-            else:
-                print(f"{app_name} Dev-Data Insertion Failed")
-                print(all_app_info)
+                ]
+                # print(all_app_info)
+                if dev_client.write_points(all_app_info, protocol='json'):
+                    print(f"{app_name} Data Insertion success")
+                    pass
+                else:
+                    print(f"{app_name} Dev-Data Insertion Failed")
+                    print(all_app_info)
+            except IndexError:
+                all_app_info = [
+                    {
+                        "measurement": "MTMS_INFO",
+                        "tags": {
+                            "IAAS": "AWS-IAT",
+                            "Product_Version": f"{cpi_prod_version()} - {datetime.now().date()}"
+                        },
+                        "fields": {
+                            "Microservice": app_name,
+                            "Status": app_state,
+                            "Version": app_version,
+                            "UpdatedOn": app_updated_at,
+                            "GUID": app_guid,
+                            "Instaces": mtms_hc_info[0],
+                            "Memory": mtms_hc_info[1],
+                            "Disk_size": mtms_hc_info[2],
+                            "Healthcheck_type": mtms_hc_info[3],
+                            "HC_timeout": mtms_hc_info[4],
+                            "HC_invocation_timeout": mtms_hc_info[5],
+                            "HC_endpoint": "null"
+
+                        }
+                    }
+                ]
+                # print(all_app_info)
+                if dev_client.write_points(all_app_info, protocol='json'):
+                    print(f"{app_name} Data Insertion success")
+                    pass
+                else:
+                    print(f"{app_name} Dev-Data Insertion Failed")
+                    print(all_app_info)
 
 def main():
     aws_cf_oauth_token()
