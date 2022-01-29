@@ -106,7 +106,7 @@ def push_app_info():
                             "UpdatedOn": app_updated_at,
                             "GUID": app_guid,
                             "Instaces": mtms_hc_info[0],
-                            "Meomory": mtms_hc_info[1],
+                            "Memory": mtms_hc_info[1],
                             "Disk_size": mtms_hc_info[2],
                             "Healthcheck_type": mtms_hc_info[3],
                             "HC_timeout": mtms_hc_info[4],
@@ -123,7 +123,7 @@ def push_app_info():
                 else:
                     print(f"{app_name} Dev-Data Insertion Failed")
                     print(all_app_info)
-            except IndexError as error:
+            except IndexError as error_message:
                 # print(f"{error} in {app_name}")
                 all_app_info = [
                     {
