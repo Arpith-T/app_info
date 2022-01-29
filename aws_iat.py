@@ -123,7 +123,8 @@ def push_app_info():
                 else:
                     print(f"{app_name} Dev-Data Insertion Failed")
                     print(all_app_info)
-            except IndexError:
+            except IndexError as error:
+                # print(f"{error} in {app_name}")
                 all_app_info = [
                     {
                         "measurement": "MTMS_INFO",
